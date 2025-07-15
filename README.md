@@ -94,7 +94,7 @@ Flags:
 
 ## Requirements
 
-- Go 1.22 or higher
+- Go 1.24.4 or higher
 - Access to Kubernetes cluster (optional - only needed for secret/configmap resolution)
 - Valid kubeconfig file (optional - secrets/configmaps will show placeholders without it)
 
