@@ -60,7 +60,7 @@ kenv extract -f deploy.yaml --mode env
 | --------- | ----------- | ---------------------------------------------------------- |
 | **NFR-1** | Performance | 1 000-line manifest + 50 secrets → ≤ 2 s                   |
 | **NFR-2** | Security    | Secret values remain only in memory; never written to disk |
-| **NFR-3** | Runtime     | Go 1.22; supports Linux / macOS / Windows                  |
+| **NFR-3** | Runtime     | Go 1.24.4; supports Linux / macOS / Windows                |
 | **NFR-4** | Portability | Single static binary (CGO disabled)                        |
 | **NFR-5** | Logging     | `--verbose` enables debug; default = warn+                 |
 
