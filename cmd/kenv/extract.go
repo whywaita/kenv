@@ -51,16 +51,21 @@ func runExtract(opts *extractOptions) error {
 
 	// Read manifest
 	var reader io.Reader
-	if opts.file == "" {
+	switch opts.file {
+	case "":
 		return fmt.Errorf("manifest file is required")
-	} else if opts.file == "-" {
+	case "-":
 		reader = os.Stdin
-	} else {
+	default:
 		file, err := os.Open(opts.file)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				fmt.Fprintf(os.Stderr, "failed to close file: %v\n", err)
+			}
+		}()
 		reader = file
 	}
 
