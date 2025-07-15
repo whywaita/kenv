@@ -38,3 +38,4 @@ func FormatEnv(envVars []extractor.EnvVar, redact bool) string {
 
 	return strings.Join(parts, " ")
 }
+

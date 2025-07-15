@@ -12,12 +12,12 @@ import (
 )
 
 type extractOptions struct {
-	file        string
-	mode        string
-	container   string
-	context     string
-	namespace   string
-	redact      bool
+	file      string
+	mode      string
+	container string
+	context   string
+	namespace string
+	redact    bool
 }
 
 func newExtractCmd() *cobra.Command {
@@ -99,3 +99,4 @@ func runExtract(opts *extractOptions) error {
 	fmt.Println(output)
 	return nil
 }
+

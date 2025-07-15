@@ -95,7 +95,7 @@ spec:
 			wantErr: false,
 		},
 		{
-			name:     "unsupported resource",
+			name: "unsupported resource",
 			manifest: `apiVersion: v1
 kind: Service
 metadata:
@@ -110,17 +110,18 @@ metadata:
 		t.Run(tt.name, func(t *testing.T) {
 			e := New()
 			reader := strings.NewReader(tt.manifest)
-			
+
 			envVars, err := e.Extract(reader, tt.opts)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Extract() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr && len(envVars) != tt.wantLen {
 				t.Errorf("Extract() got %d env vars, want %d", len(envVars), tt.wantLen)
 			}
 		})
 	}
 }
+

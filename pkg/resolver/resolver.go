@@ -130,3 +130,4 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 
 	return resolved, nil
 }
+

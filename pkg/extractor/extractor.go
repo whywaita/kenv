@@ -41,7 +41,7 @@ func (e *Extractor) Extract(reader io.Reader, opts Options) ([]EnvVar, error) {
 			return nil, fmt.Errorf("failed to decode manifest: %w", err)
 		}
 
-		if rawObj.Raw == nil || len(rawObj.Raw) == 0 {
+		if len(rawObj.Raw) == 0 {
 			continue
 		}
 
@@ -146,3 +146,4 @@ func (e *Extractor) Extract(reader io.Reader, opts Options) ([]EnvVar, error) {
 
 	return envVars, nil
 }
+
