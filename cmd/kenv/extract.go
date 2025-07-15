@@ -99,4 +99,3 @@ func runExtract(opts *extractOptions) error {
 	fmt.Println(output)
 	return nil
 }
-

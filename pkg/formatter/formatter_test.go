@@ -95,4 +95,3 @@ func TestFormatEnv(t *testing.T) {
 		})
 	}
 }
-

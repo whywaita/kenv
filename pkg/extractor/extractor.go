@@ -146,4 +146,3 @@ func (e *Extractor) Extract(reader io.Reader, opts Options) ([]EnvVar, error) {
 
 	return envVars, nil
 }
-
