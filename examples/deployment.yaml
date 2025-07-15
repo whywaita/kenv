@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        env:
+        - name: APP_ENV
+          value: production
+        - name: LOG_LEVEL
+          value: info
+        - name: DB_HOST
+          value: db.example.com
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: key
+        - name: CONFIG_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: config-path
+        ports:
+        - containerPort: 80
