@@ -8,8 +8,6 @@ updates:
       time: "09:00"
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
-    reviewers:
-      - "whywaita"
     labels:
       - "dependencies"
       - "go"
@@ -22,8 +20,6 @@ updates:
       time: "09:00"
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
-    reviewers:
-      - "whywaita"
     labels:
       - "dependencies"
       - "github-actions"
