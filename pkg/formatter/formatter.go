@@ -17,7 +17,7 @@ func FormatDocker(envVars []extractor.EnvVar, redact bool) string {
 		}
 		// Escape double quotes in value for docker
 		value = strings.ReplaceAll(value, `"`, `\"`)
-		parts = append(parts, fmt.Sprintf("-e %s=%s", env.Name, value))
+		parts = append(parts, fmt.Sprintf(`-e %s="%s"`, env.Name, value))
 	}
 
 	return strings.Join(parts, " ")

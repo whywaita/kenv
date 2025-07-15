@@ -20,7 +20,7 @@ func TestFormatDocker(t *testing.T) {
 				{Name: "BAZ", Value: "qux", Source: extractor.SourceDirect},
 			},
 			redact:   false,
-			expected: "-e FOO=bar -e BAZ=qux",
+			expected: `-e FOO="bar" -e BAZ="qux"`,
 		},
 		{
 			name: "with quotes",
@@ -28,7 +28,7 @@ func TestFormatDocker(t *testing.T) {
 				{Name: "MESSAGE", Value: `hello "world"`, Source: extractor.SourceDirect},
 			},
 			redact:   false,
-			expected: `-e MESSAGE=hello \"world\"`,
+			expected: `-e MESSAGE="hello \"world\""`,
 		},
 		{
 			name: "redacted secrets",
@@ -37,7 +37,7 @@ func TestFormatDocker(t *testing.T) {
 				{Name: "USER", Value: "admin", Source: extractor.SourceDirect},
 			},
 			redact:   true,
-			expected: "-e PASSWORD=***REDACTED*** -e USER=admin",
+			expected: `-e PASSWORD="***REDACTED***" -e USER="admin"`,
 		},
 	}
 
