@@ -109,23 +109,23 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 			resolved = append(resolved, envVar)
 
 		case extractor.SourceConfigMap:
-			if envVar.ConfigMapRef != nil {
-				configMap, ok := configMapCache[envVar.ConfigMapRef.Name]
+			if envVar.ConfigRef != nil {
+				configMap, ok := configMapCache[envVar.ConfigRef.Name]
 				if !ok {
 					var err error
-					configMap, err = r.client.CoreV1().ConfigMaps(r.namespace).Get(ctx, envVar.ConfigMapRef.Name, metav1.GetOptions{})
+					configMap, err = r.client.CoreV1().ConfigMaps(r.namespace).Get(ctx, envVar.ConfigRef.Name, metav1.GetOptions{})
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "Warning: failed to get configmap %s: %v\n", envVar.ConfigMapRef.Name, err)
+						fmt.Fprintf(os.Stderr, "Warning: failed to get configmap %s: %v\n", envVar.ConfigRef.Name, err)
 						resolved = append(resolved, envVar)
 						continue
 					}
-					configMapCache[envVar.ConfigMapRef.Name] = configMap
+					configMapCache[envVar.ConfigRef.Name] = configMap
 				}
 
-				if value, ok := configMap.Data[envVar.ConfigMapRef.Key]; ok {
+				if value, ok := configMap.Data[envVar.ConfigRef.Key]; ok {
 					envVar.Value = value
 				} else {
-					fmt.Fprintf(os.Stderr, "Warning: key %s not found in configmap %s\n", envVar.ConfigMapRef.Key, envVar.ConfigMapRef.Name)
+					fmt.Fprintf(os.Stderr, "Warning: key %s not found in configmap %s\n", envVar.ConfigRef.Key, envVar.ConfigRef.Name)
 				}
 			}
 			resolved = append(resolved, envVar)

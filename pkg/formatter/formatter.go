@@ -47,11 +47,11 @@ func FormatShell(envVars []extractor.EnvVar, export bool) string {
 		if strings.HasPrefix(env.Name, "#") {
 			continue
 		}
-		
+
 		value := env.Value
 		// Escape single quotes in value for shell
 		value = strings.ReplaceAll(value, `'`, `'\''`)
-		
+
 		if export {
 			parts = append(parts, fmt.Sprintf(`export %s='%s'`, env.Name, value))
 		} else {
@@ -70,7 +70,7 @@ func FormatDotenv(envVars []extractor.EnvVar) string {
 		if strings.HasPrefix(env.Name, "#") {
 			continue
 		}
-		
+
 		value := env.Value
 		// Escape double quotes in value for dotenv
 		value = strings.ReplaceAll(value, `"`, `\"`)
@@ -89,7 +89,7 @@ func FormatCompose(envVars []extractor.EnvVar) string {
 		if strings.HasPrefix(env.Name, "#") {
 			continue
 		}
-		
+
 		value := env.Value
 		// For compose format, we need to handle multi-line values
 		if strings.Contains(value, "\n") {

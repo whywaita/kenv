@@ -59,7 +59,7 @@ Examples:
   # Output in shell format with export
   kubectl eextract pod/mypod --format shell --export`,
 		Version: version,
-		Args: cobra.ExactArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runExtract(o, cmd, args[0])
 		},
@@ -74,7 +74,6 @@ Examples:
 	return cmd
 }
 
-
 func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 	restConfig, err := o.configFlags.ToRESTConfig()
 	if err != nil {
@@ -86,7 +85,7 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 		return fmt.Errorf("failed to create clientset: %w", err)
 	}
 
-	namespace, err := o.configFlags.ToRawKubeConfigLoader().Namespace()
+	namespace, _, err := o.configFlags.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return fmt.Errorf("failed to get namespace: %w", err)
 	}
@@ -153,13 +152,13 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 	res := resolver.NewFromClientset(clientset, namespace)
 	envVars, err = res.ResolveAll(envVars)
 	if err != nil {
-		fmt.Fprintf(o.ErrOut, "Warning: failed to resolve some references: %v\n", err)
+		fmt.Fprintf(o.IOStreams.ErrOut, "Warning: failed to resolve some references: %v\n", err)
 	}
 
 	// Format output
 	formatFlag, _ := cmd.Flags().GetString("format")
 	exportFlag, _ := cmd.Flags().GetBool("export")
-	
+
 	var output string
 	switch formatFlag {
 	case "docker":
@@ -174,7 +173,7 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 		output = formatter.FormatDocker(envVars, false)
 	}
 
-	fmt.Fprintln(o.Out, output)
+	fmt.Fprintln(o.IOStreams.Out, output)
 	return nil
 }
 
@@ -198,12 +197,12 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 			// Handle valueFrom
 			if env.ValueFrom != nil {
 				if env.ValueFrom.SecretKeyRef != nil {
-					ev.SecretRef = &extractor.SecretRef{
+					ev.SecretRef = &extractor.SecretKeyRef{
 						Name: env.ValueFrom.SecretKeyRef.Name,
 						Key:  env.ValueFrom.SecretKeyRef.Key,
 					}
 				} else if env.ValueFrom.ConfigMapKeyRef != nil {
-					ev.ConfigMapRef = &extractor.ConfigMapRef{
+					ev.ConfigRef = &extractor.ConfigMapKeyRef{
 						Name: env.ValueFrom.ConfigMapKeyRef.Name,
 						Key:  env.ValueFrom.ConfigMapKeyRef.Key,
 					}
@@ -219,7 +218,7 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 				result = append(result, extractor.EnvVar{
 					Name:  fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
 					Value: "",
-					SecretRef: &extractor.SecretRef{
+					SecretRef: &extractor.SecretKeyRef{
 						Name: envFrom.SecretRef.Name,
 						Key:  "*", // All keys
 					},
@@ -228,7 +227,7 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 				result = append(result, extractor.EnvVar{
 					Name:  fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
 					Value: "",
-					ConfigMapRef: &extractor.ConfigMapRef{
+					ConfigRef: &extractor.ConfigMapKeyRef{
 						Name: envFrom.ConfigMapRef.Name,
 						Key:  "*", // All keys
 					},
