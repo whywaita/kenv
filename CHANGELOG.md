@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.2](https://github.com/whywaita/keex/compare/v0.1.1...v0.1.2) - 2025-07-16
+- Fix a version in goreleaser by @whywaita in https://github.com/whywaita/keex/pull/16
+
 ## [v0.1.1](https://github.com/whywaita/keex/compare/v0.1.0...v0.1.1) - 2025-07-16
 - docs: Improve README with motivation and better examples by @whywaita in https://github.com/whywaita/keex/pull/11
 - Add tagpr for automated release management by @whywaita in https://github.com/whywaita/keex/pull/12
