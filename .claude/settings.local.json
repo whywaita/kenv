@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__human-in-the-loop__ask_human",
+      "Bash(mkdir:*)",
+      "Bash(go mod:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(./kenv:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:goreleaser.com)",
+      "Bash(find:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gofmt:*)",
+      "Bash(golangci-lint run:*)",
+      "Bash(go install:*)",
+      "Bash($HOME/go/bin/gosec:*)",
+      "Bash($HOME/go/bin/govulncheck ./...)",
+      "Bash(go get:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(go vet:*)",
+      "Bash(gh run view:*)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)",
+      "Bash(goreleaser check:*)",
+      "Bash(go run:*)",
+      "Bash(git checkout:*)"
+    ],
+    "deny": []
+  }
+}

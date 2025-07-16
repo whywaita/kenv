@@ -31,3 +31,4 @@ jobs:
           files: ./coverage.txt
           flags: unittests
           verbose: true
+          token: ${{ github.event_name == 'pull_request' && secrets.CODECOV_TOKEN || '' }}

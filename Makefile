@@ -4,13 +4,13 @@ build:
 	go build -o kenv ./cmd/kenv
 
 build-plugin:
-	go build -o kubectl-kenv ./cmd/kubectl-kenv
+	go build -o kubectl-eextract ./cmd/kubectl-eextract
 
 install-plugin: build-plugin
-	cp kubectl-kenv $(GOPATH)/bin/kubectl-kenv
+	cp kubectl-eextract $(GOPATH)/bin/kubectl-eextract
 
 test:
 	go test ./...
 
 clean:
-	rm -f kenv kubectl-kenv
+	rm -f kenv kubectl-eextract

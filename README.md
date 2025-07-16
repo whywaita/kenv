@@ -92,7 +92,7 @@ kenv can also be used as a kubectl plugin, allowing you to extract environment v
 
 ```bash
 # Install the kubectl plugin
-go install github.com/whywaita/kenv/cmd/kubectl-kenv@latest
+go install github.com/whywaita/kenv/cmd/kubectl-eextract@latest
 
 # Or build from source
 git clone https://github.com/whywaita/kenv.git
@@ -104,22 +104,22 @@ Once installed, you can use it with kubectl:
 
 ```bash
 # Extract env vars from a live deployment
-kubectl kenv extract deployment/myapp
+kubectl eextract deployment/myapp
 
 # Extract from a specific container
-kubectl kenv extract deployment/myapp -c app
+kubectl eextract deployment/myapp -c app
 
 # Different output formats
-kubectl kenv extract deployment/myapp --format docker
-kubectl kenv extract deployment/myapp --format shell --export
-kubectl kenv extract deployment/myapp --format dotenv > .env
-kubectl kenv extract deployment/myapp --format compose
+kubectl eextract deployment/myapp --format docker
+kubectl eextract deployment/myapp --format shell --export
+kubectl eextract deployment/myapp --format dotenv > .env
+kubectl eextract deployment/myapp --format compose
 
 # Extract from other resource types
-kubectl kenv extract statefulset/database
-kubectl kenv extract pod/mypod-xyz123
-kubectl kenv extract job/migrate-db
-kubectl kenv extract cronjob/backup
+kubectl eextract statefulset/database
+kubectl eextract pod/mypod-xyz123
+kubectl eextract job/migrate-db
+kubectl eextract cronjob/backup
 ```
 
 ## Usage
