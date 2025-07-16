@@ -26,7 +26,7 @@ check_value() {
 # Test 1: Extract environment variables from deployment
 echo ""
 echo "Test 1: Extracting environment variables from deployment..."
-OUTPUT=$(./kubectl-eex deployment test-app -n test-keex)
+OUTPUT=$(./kubectl-eex deployment/test-app -n test-keex)
 
 # Create a temporary file to source the environment variables
 TMPFILE=$(mktemp)
@@ -93,11 +93,11 @@ echo ""
 echo "Test 2: Testing different output formats..."
 
 echo "Testing docker format:"
-./kubectl-eex deployment test-app -n test-keex -o docker | grep -q "ENV DATABASE_HOST=\"localhost\"" || (echo "Docker format test failed" && exit 1)
+./kubectl-eex deployment/test-app -n test-keex -o docker | grep -q "ENV DATABASE_HOST=\"localhost\"" || (echo "Docker format test failed" && exit 1)
 echo -e "${GREEN}✓ Docker format test passed${NC}"
 
 echo "Testing dotenv format:"
-./kubectl-eex deployment test-app -n test-keex -o dotenv | grep -q "DATABASE_HOST=localhost" || (echo "Dotenv format test failed" && exit 1)
+./kubectl-eex deployment/test-app -n test-keex -o dotenv | grep -q "DATABASE_HOST=localhost" || (echo "Dotenv format test failed" && exit 1)
 echo -e "${GREEN}✓ Dotenv format test passed${NC}"
 
 echo ""
