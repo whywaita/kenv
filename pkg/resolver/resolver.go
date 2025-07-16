@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/whywaita/keex/pkg/extractor"
 	corev1 "k8s.io/api/core/v1"
@@ -103,7 +104,15 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 				// Handle envFrom (when Key is "*")
 				if envVar.SecretRef.Key == "*" {
 					// Extract all key-value pairs from the secret
-					for key, value := range secret.Data {
+					// Sort keys for consistent output
+					keys := make([]string, 0, len(secret.Data))
+					for key := range secret.Data {
+						keys = append(keys, key)
+					}
+					sort.Strings(keys)
+
+					for _, key := range keys {
+						value := secret.Data[key]
 						envName := key
 						if envVar.Prefix != "" {
 							envName = envVar.Prefix + key
@@ -149,7 +158,15 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 				// Handle envFrom (when Key is "*")
 				if envVar.ConfigRef.Key == "*" {
 					// Extract all key-value pairs from the configmap
-					for key, value := range configMap.Data {
+					// Sort keys for consistent output
+					keys := make([]string, 0, len(configMap.Data))
+					for key := range configMap.Data {
+						keys = append(keys, key)
+					}
+					sort.Strings(keys)
+
+					for _, key := range keys {
+						value := configMap.Data[key]
 						envName := key
 						if envVar.Prefix != "" {
 							envName = envVar.Prefix + key
