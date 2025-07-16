@@ -2,6 +2,65 @@
 
 kenv is a CLI tool that extracts environment variables from Kubernetes manifests and formats them for use with `docker run` or shell commands.
 
+## Motivation
+
+When developing or debugging containerized applications, you often need to run the same container locally with the exact same environment variables as in your Kubernetes cluster. Manually copying environment variables from Kubernetes manifests is tedious and error-prone, especially when dealing with:
+
+- Multiple environment variables across different manifests
+- Values from ConfigMaps and Secrets
+- Complex deployments with many containers
+
+kenv solves this by automatically extracting all environment variables from your Kubernetes resources and formatting them for immediate use.
+
+## Quick Examples
+
+### Running a container locally with the same environment as in Kubernetes
+
+```bash
+# Extract env vars from a deployment and run locally
+$ kenv extract -f examples/deployment.yaml --mode docker
+-e APP_ENV="production" -e LOG_LEVEL="info" -e DB_HOST="db.example.com" -e DB_PORT="5432" -e DB_USER="<db-secret:username>" -e DB_PASS="<db-secret:password>" -e API_KEY="<api-secret:key>" -e CONFIG_PATH="<app-config:config-path>"
+
+# Use it with docker run
+$ docker run $(kenv extract -f examples/deployment.yaml --mode docker) myapp:latest
+
+# Or from a live cluster (with actual secret values resolved)
+$ kubectl get deployment myapp -o yaml | kenv extract -f - --mode docker | xargs docker run myapp:latest
+```
+
+### Debugging with local tools using production environment
+
+```bash
+# Export Kubernetes env vars to your shell
+$ kenv extract -f examples/deployment.yaml --mode env
+APP_ENV="production" LOG_LEVEL="info" DB_HOST="db.example.com" DB_PORT="5432" DB_USER="<db-secret:username>" DB_PASS="<db-secret:password>" API_KEY="<api-secret:key>" CONFIG_PATH="<app-config:config-path>"
+
+# Evaluate in your shell
+$ eval $(kenv extract -f examples/deployment.yaml --mode env)
+
+# Now run your app locally with production config
+$ go run main.go
+# or
+$ python app.py
+```
+
+### Comparing environments between different deployments
+
+```bash
+# Extract and save environment from staging
+$ kenv extract -f staging-deployment.yaml > staging.env
+
+# Extract and save environment from production  
+$ kenv extract -f prod-deployment.yaml > prod.env
+
+# Compare the differences
+$ diff staging.env prod.env
+3c3
+< DB_HOST="staging-db.example.com"
+---
+> DB_HOST="prod-db.example.com"
+```
+
 ## Features
 
 - Extract environment variables from Deployment, StatefulSet, DaemonSet, Job, CronJob, and Pod resources
@@ -27,53 +86,60 @@ go build -o kenv cmd/kenv/*.go
 
 ## Usage
 
-### Basic usage
-
-Extract environment variables from a deployment:
+### Basic Usage
 
 ```bash
+# Extract environment variables from a deployment
 kenv extract -f deployment.yaml
+
+# Extract from a live cluster
+kubectl get deployment myapp -o yaml | kenv extract -f -
 ```
 
-### Output modes
+### Output Modes
 
-Docker mode (for use with `docker run`):
+**Docker mode** - Format for `docker run`:
 ```bash
 kenv extract -f deployment.yaml --mode docker
 # Output: -e DB_HOST=db.example.com -e DB_USER=admin -e DB_PASS=secret ...
 ```
 
-Environment mode (for shell):
+**Environment mode** - Format for shell export:
 ```bash
 kenv extract -f deployment.yaml --mode env
 # Output: DB_HOST="db.example.com" DB_USER="admin" DB_PASS="secret" ...
 ```
 
-### Examples
+### Advanced Examples
 
-Use with docker run:
+**Working with multi-container pods:**
 ```bash
-docker run $(kenv extract -f deployment.yaml --mode docker) myimage:latest
+# Target a specific container by name
+kenv extract -f pod.yaml --container app
+kenv extract -f pod.yaml --container sidecar
 ```
 
-Export to shell:
+**Security and sensitive data:**
 ```bash
-eval $(kenv extract -f deployment.yaml --mode env)
-```
-
-Read from stdin:
-```bash
-kubectl get deployment myapp -o yaml | kenv extract -f - --mode docker
-```
-
-Target specific container:
-```bash
-kenv extract -f multi-container-pod.yaml --container app
-```
-
-Redact sensitive values:
-```bash
+# Redact secret values in output (useful for sharing configs)
 kenv extract -f deployment.yaml --redact
+# Output: DB_HOST="db.example.com" DB_PASS="***REDACTED***" ...
+
+# Resolve actual values from ConfigMaps and Secrets
+kenv extract -f deployment.yaml --context production --namespace backend
+```
+
+**Integration with other tools:**
+```bash
+# Create an env file for docker-compose
+kenv extract -f deployment.yaml --mode env > .env
+
+# Pass environment to local development server
+kenv extract -f deployment.yaml --mode env | grep -E "^API_|^DB_" > local.env
+source local.env && npm run dev
+
+# Quick environment debugging
+kenv extract -f deployment.yaml | grep DATABASE
 ```
 
 ## Command Line Options
