@@ -1,6 +1,6 @@
-# kenv - Kubernetes Environment Variable Extractor
+# keex - Kubernetes Environment Extractor
 
-kenv is a CLI tool that extracts environment variables from Kubernetes manifests and formats them for use with `docker run` or shell commands.
+keex is a CLI tool that extracts environment variables from Kubernetes manifests and formats them for use with `docker run` or shell commands.
 
 ## Motivation
 
@@ -10,7 +10,7 @@ When developing or debugging containerized applications, you often need to run t
 - Values from ConfigMaps and Secrets
 - Complex deployments with many containers
 
-kenv solves this by automatically extracting all environment variables from your Kubernetes resources and formatting them for immediate use.
+keex solves this by automatically extracting all environment variables from your Kubernetes resources and formatting them for immediate use.
 
 ## Quick Examples
 
@@ -18,25 +18,25 @@ kenv solves this by automatically extracting all environment variables from your
 
 ```bash
 # Extract env vars from a deployment and run locally
-$ kenv extract -f examples/deployment.yaml --mode docker
+$ keex extract -f examples/deployment.yaml --mode docker
 -e APP_ENV="production" -e LOG_LEVEL="info" -e DB_HOST="db.example.com" -e DB_PORT="5432" -e DB_USER="<db-secret:username>" -e DB_PASS="<db-secret:password>" -e API_KEY="<api-secret:key>" -e CONFIG_PATH="<app-config:config-path>"
 
 # Use it with docker run
-$ docker run $(kenv extract -f examples/deployment.yaml --mode docker) myapp:latest
+$ docker run $(keex extract -f examples/deployment.yaml --mode docker) myapp:latest
 
 # Or from a live cluster (with actual secret values resolved)
-$ kubectl get deployment myapp -o yaml | kenv extract -f - --mode docker | xargs docker run myapp:latest
+$ kubectl get deployment myapp -o yaml | keex extract -f - --mode docker | xargs docker run myapp:latest
 ```
 
 ### Debugging with local tools using production environment
 
 ```bash
 # Export Kubernetes env vars to your shell
-$ kenv extract -f examples/deployment.yaml --mode env
+$ keex extract -f examples/deployment.yaml --mode env
 APP_ENV="production" LOG_LEVEL="info" DB_HOST="db.example.com" DB_PORT="5432" DB_USER="<db-secret:username>" DB_PASS="<db-secret:password>" API_KEY="<api-secret:key>" CONFIG_PATH="<app-config:config-path>"
 
 # Evaluate in your shell
-$ eval $(kenv extract -f examples/deployment.yaml --mode env)
+$ eval $(keex extract -f examples/deployment.yaml --mode env)
 
 # Now run your app locally with production config
 $ go run main.go
@@ -48,10 +48,10 @@ $ python app.py
 
 ```bash
 # Extract and save environment from staging
-$ kenv extract -f staging-deployment.yaml > staging.env
+$ keex extract -f staging-deployment.yaml > staging.env
 
 # Extract and save environment from production  
-$ kenv extract -f prod-deployment.yaml > prod.env
+$ keex extract -f prod-deployment.yaml > prod.env
 
 # Compare the differences
 $ diff staging.env prod.env
@@ -72,16 +72,54 @@ $ diff staging.env prod.env
 
 ## Installation
 
+### Standalone CLI
+
 ```bash
-go install github.com/whywaita/kenv/cmd/kenv@latest
+go install github.com/whywaita/keex/cmd/keex@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/whywaita/kenv.git
-cd kenv
-go build -o kenv cmd/kenv/*.go
+git clone https://github.com/whywaita/keex.git
+cd keex
+go build -o keex cmd/keex/*.go
+```
+
+### kubectl Plugin
+
+keex can also be used as a kubectl plugin, allowing you to extract environment variables directly from live Kubernetes resources:
+
+```bash
+# Install the kubectl plugin
+go install github.com/whywaita/keex/cmd/kubectl-eex@latest
+
+# Or build from source
+git clone https://github.com/whywaita/keex.git
+cd keex
+make install-plugin
+```
+
+Once installed, you can use it with kubectl:
+
+```bash
+# Extract env vars from a live deployment
+kubectl eex deployment/myapp
+
+# Extract from a specific container
+kubectl eex deployment/myapp -c app
+
+# Different output formats
+kubectl eex deployment/myapp --format docker
+kubectl eex deployment/myapp --format shell --export
+kubectl eex deployment/myapp --format dotenv > .env
+kubectl eex deployment/myapp --format compose
+
+# Extract from other resource types
+kubectl eex statefulset/database
+kubectl eex pod/mypod-xyz123
+kubectl eex job/migrate-db
+kubectl eex cronjob/backup
 ```
 
 ## Usage
@@ -90,23 +128,23 @@ go build -o kenv cmd/kenv/*.go
 
 ```bash
 # Extract environment variables from a deployment
-kenv extract -f deployment.yaml
+keex extract -f deployment.yaml
 
 # Extract from a live cluster
-kubectl get deployment myapp -o yaml | kenv extract -f -
+kubectl get deployment myapp -o yaml | keex extract -f -
 ```
 
 ### Output Modes
 
 **Docker mode** - Format for `docker run`:
 ```bash
-kenv extract -f deployment.yaml --mode docker
+keex extract -f deployment.yaml --mode docker
 # Output: -e DB_HOST=db.example.com -e DB_USER=admin -e DB_PASS=secret ...
 ```
 
 **Environment mode** - Format for shell export:
 ```bash
-kenv extract -f deployment.yaml --mode env
+keex extract -f deployment.yaml --mode env
 # Output: DB_HOST="db.example.com" DB_USER="admin" DB_PASS="secret" ...
 ```
 
@@ -115,38 +153,38 @@ kenv extract -f deployment.yaml --mode env
 **Working with multi-container pods:**
 ```bash
 # Target a specific container by name
-kenv extract -f pod.yaml --container app
-kenv extract -f pod.yaml --container sidecar
+keex extract -f pod.yaml --container app
+keex extract -f pod.yaml --container sidecar
 ```
 
 **Security and sensitive data:**
 ```bash
 # Redact secret values in output (useful for sharing configs)
-kenv extract -f deployment.yaml --redact
+keex extract -f deployment.yaml --redact
 # Output: DB_HOST="db.example.com" DB_PASS="***REDACTED***" ...
 
 # Resolve actual values from ConfigMaps and Secrets
-kenv extract -f deployment.yaml --context production --namespace backend
+keex extract -f deployment.yaml --context production --namespace backend
 ```
 
 **Integration with other tools:**
 ```bash
 # Create an env file for docker-compose
-kenv extract -f deployment.yaml --mode env > .env
+keex extract -f deployment.yaml --mode env > .env
 
 # Pass environment to local development server
-kenv extract -f deployment.yaml --mode env | grep -E "^API_|^DB_" > local.env
+keex extract -f deployment.yaml --mode env | grep -E "^API_|^DB_" > local.env
 source local.env && npm run dev
 
 # Quick environment debugging
-kenv extract -f deployment.yaml | grep DATABASE
+keex extract -f deployment.yaml | grep DATABASE
 ```
 
 ## Command Line Options
 
 ```
 Usage:
-  kenv extract [flags]
+  keex extract [flags]
 
 Flags:
   -f, --file string        Manifest file path ("-" for stdin)
@@ -173,7 +211,7 @@ go test ./...
 
 Build:
 ```bash
-go build -o kenv cmd/kenv/*.go
+go build -o keex cmd/keex/*.go
 ```
 
 ## License

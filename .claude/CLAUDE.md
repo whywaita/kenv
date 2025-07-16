@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-kenv is a tool that extracts environment variables from Kubernetes manifests (Pod, Deployment, StatefulSet, etc.) and converts them to docker run or shell format. It can resolve actual values from Secrets and ConfigMaps when kubeconfig is available.
+keex is a tool that extracts environment variables from Kubernetes manifests (Pod, Deployment, StatefulSet, etc.) and converts them to docker run or shell format. It can resolve actual values from Secrets and ConfigMaps when kubeconfig is available.
 
 ## Development Commands
 
 ### Build
 ```bash
 # Local build
-go build -o kenv cmd/kenv/*.go
+go build -o keex cmd/keex/*.go
 
 # Install
-go install github.com/whywaita/kenv/cmd/kenv@latest
+go install github.com/whywaita/keex/cmd/keex@latest
 ```
 
 ### Test

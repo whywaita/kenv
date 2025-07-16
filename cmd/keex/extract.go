@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/whywaita/kenv/pkg/extractor"
-	"github.com/whywaita/kenv/pkg/formatter"
-	"github.com/whywaita/kenv/pkg/resolver"
+	"github.com/whywaita/keex/pkg/extractor"
+	"github.com/whywaita/keex/pkg/formatter"
+	"github.com/whywaita/keex/pkg/resolver"
 )
 
 type extractOptions struct {

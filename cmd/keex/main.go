@@ -20,9 +20,9 @@ func main() {
 
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "kenv",
+		Use:   "keex",
 		Short: "Extract environment variables from Kubernetes manifests",
-		Long: `kenv is a CLI tool that extracts environment variables from Kubernetes manifests
+		Long: `keex is a CLI tool that extracts environment variables from Kubernetes manifests
 and formats them for use with docker run or shell commands.`,
 		Version: version,
 	}

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/whywaita/kenv/pkg/extractor"
+	"github.com/whywaita/keex/pkg/extractor"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -67,6 +67,13 @@ func New(opts Options) (*Resolver, error) {
 		client:    clientset,
 		namespace: namespace,
 	}, nil
+}
+
+func NewFromClientset(clientset kubernetes.Interface, namespace string) *Resolver {
+	return &Resolver{
+		client:    clientset,
+		namespace: namespace,
+	}
 }
 
 func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, error) {
