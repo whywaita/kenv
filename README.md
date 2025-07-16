@@ -18,35 +18,47 @@ kenv solves this by automatically extracting all environment variables from your
 
 ```bash
 # Extract env vars from a deployment and run locally
-docker run $(kenv extract -f deployment.yaml --mode docker) myapp:latest
+$ kenv extract -f examples/deployment.yaml --mode docker
+-e APP_ENV="production" -e LOG_LEVEL="info" -e DB_HOST="db.example.com" -e DB_PORT="5432" -e DB_USER="<db-secret:username>" -e DB_PASS="<db-secret:password>" -e API_KEY="<api-secret:key>" -e CONFIG_PATH="<app-config:config-path>"
 
-# Or from a live cluster
-kubectl get deployment myapp -o yaml | kenv extract -f - --mode docker | xargs docker run myapp:latest
+# Use it with docker run
+$ docker run $(kenv extract -f examples/deployment.yaml --mode docker) myapp:latest
+
+# Or from a live cluster (with actual secret values resolved)
+$ kubectl get deployment myapp -o yaml | kenv extract -f - --mode docker | xargs docker run myapp:latest
 ```
 
 ### Debugging with local tools using production environment
 
 ```bash
 # Export Kubernetes env vars to your shell
-eval $(kenv extract -f deployment.yaml --mode env)
+$ kenv extract -f examples/deployment.yaml --mode env
+APP_ENV="production" LOG_LEVEL="info" DB_HOST="db.example.com" DB_PORT="5432" DB_USER="<db-secret:username>" DB_PASS="<db-secret:password>" API_KEY="<api-secret:key>" CONFIG_PATH="<app-config:config-path>"
+
+# Evaluate in your shell
+$ eval $(kenv extract -f examples/deployment.yaml --mode env)
 
 # Now run your app locally with production config
-go run main.go
+$ go run main.go
 # or
-python app.py
+$ python app.py
 ```
 
 ### Comparing environments between different deployments
 
 ```bash
 # Extract and save environment from staging
-kenv extract -f staging-deployment.yaml > staging.env
+$ kenv extract -f staging-deployment.yaml > staging.env
 
 # Extract and save environment from production  
-kenv extract -f prod-deployment.yaml > prod.env
+$ kenv extract -f prod-deployment.yaml > prod.env
 
 # Compare the differences
-diff staging.env prod.env
+$ diff staging.env prod.env
+3c3
+< DB_HOST="staging-db.example.com"
+---
+> DB_HOST="prod-db.example.com"
 ```
 
 ## Features
