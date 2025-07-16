@@ -26,7 +26,9 @@
       "Bash(goreleaser check:*)",
       "Bash(go run:*)",
       "Bash(git checkout:*)",
-      "Bash(go fmt:*)"
+      "Bash(go fmt:*)",
+      "Bash(gh workflow view:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   }
