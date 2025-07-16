@@ -152,7 +152,9 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 	res := resolver.NewFromClientset(clientset, namespace)
 	envVars, err = res.ResolveAll(envVars)
 	if err != nil {
-		fmt.Fprintf(o.IOStreams.ErrOut, "Warning: failed to resolve some references: %v\n", err)
+		if _, writeErr := fmt.Fprintf(o.ErrOut, "Warning: failed to resolve some references: %v\n", err); writeErr != nil {
+			return writeErr
+		}
 	}
 
 	// Format output
@@ -173,7 +175,9 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 		output = formatter.FormatDocker(envVars, false)
 	}
 
-	fmt.Fprintln(o.IOStreams.Out, output)
+	if _, err := fmt.Fprintln(o.Out, output); err != nil {
+		return err
+	}
 	return nil
 }
 
