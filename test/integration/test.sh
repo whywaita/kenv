@@ -28,6 +28,11 @@ echo ""
 echo "Test 1: Extracting environment variables from deployment..."
 OUTPUT=$(./kubectl-eex deployment/test-app -n test-keex -f shell)
 
+# Debug: Show the output
+echo "DEBUG: kubectl-eex output:"
+echo "$OUTPUT"
+echo "DEBUG: End of output"
+
 # Create a temporary file to source the environment variables
 TMPFILE=$(mktemp)
 echo "$OUTPUT" > "$TMPFILE"

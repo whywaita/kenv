@@ -213,11 +213,13 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 			// Handle valueFrom
 			if env.ValueFrom != nil {
 				if env.ValueFrom.SecretKeyRef != nil {
+					ev.Source = extractor.SourceSecret
 					ev.SecretRef = &extractor.SecretKeyRef{
 						Name: env.ValueFrom.SecretKeyRef.Name,
 						Key:  env.ValueFrom.SecretKeyRef.Key,
 					}
 				} else if env.ValueFrom.ConfigMapKeyRef != nil {
+					ev.Source = extractor.SourceConfigMap
 					ev.ConfigRef = &extractor.ConfigMapKeyRef{
 						Name: env.ValueFrom.ConfigMapKeyRef.Name,
 						Key:  env.ValueFrom.ConfigMapKeyRef.Key,
