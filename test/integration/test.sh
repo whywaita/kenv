@@ -98,12 +98,10 @@ if [ "$OUTPUT" = "$OUTPUT_TYPE_NAME" ]; then
     echo -e "${GREEN}✓ TYPE NAME format works correctly${NC}"
 else
     echo -e "${RED}✗ TYPE NAME format output differs from TYPE/NAME format${NC}"
-    echo "Expected (TYPE/NAME):"
-    echo "$OUTPUT" | head -5
-    echo "..."
-    echo "Actual (TYPE NAME):"
-    echo "$OUTPUT_TYPE_NAME" | head -5
-    echo "..."
+    echo "Length TYPE/NAME: $(echo -n "$OUTPUT" | wc -c)"
+    echo "Length TYPE NAME: $(echo -n "$OUTPUT_TYPE_NAME" | wc -c)"
+    echo "Diff output:"
+    diff -u <(echo "$OUTPUT") <(echo "$OUTPUT_TYPE_NAME") || true
     exit 1
 fi
 
