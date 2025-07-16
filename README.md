@@ -72,6 +72,8 @@ $ diff staging.env prod.env
 
 ## Installation
 
+### Standalone CLI
+
 ```bash
 go install github.com/whywaita/kenv/cmd/kenv@latest
 ```
@@ -82,6 +84,42 @@ Or build from source:
 git clone https://github.com/whywaita/kenv.git
 cd kenv
 go build -o kenv cmd/kenv/*.go
+```
+
+### kubectl Plugin
+
+kenv can also be used as a kubectl plugin, allowing you to extract environment variables directly from live Kubernetes resources:
+
+```bash
+# Install the kubectl plugin
+go install github.com/whywaita/kenv/cmd/kubectl-kenv@latest
+
+# Or build from source
+git clone https://github.com/whywaita/kenv.git
+cd kenv
+make install-plugin
+```
+
+Once installed, you can use it with kubectl:
+
+```bash
+# Extract env vars from a live deployment
+kubectl kenv extract deployment/myapp
+
+# Extract from a specific container
+kubectl kenv extract deployment/myapp -c app
+
+# Different output formats
+kubectl kenv extract deployment/myapp --format docker
+kubectl kenv extract deployment/myapp --format shell --export
+kubectl kenv extract deployment/myapp --format dotenv > .env
+kubectl kenv extract deployment/myapp --format compose
+
+# Extract from other resource types
+kubectl kenv extract statefulset/database
+kubectl kenv extract pod/mypod-xyz123
+kubectl kenv extract job/migrate-db
+kubectl kenv extract cronjob/backup
 ```
 
 ## Usage
