@@ -26,7 +26,7 @@ check_value() {
 # Test 1: Extract environment variables from deployment
 echo ""
 echo "Test 1: Extracting environment variables from deployment..."
-OUTPUT=$(./kubectl-eex deployment/test-app -n test-keex)
+OUTPUT=$(./kubectl-eex deployment/test-app -n test-keex -f shell)
 
 # Create a temporary file to source the environment variables
 TMPFILE=$(mktemp)
@@ -91,7 +91,7 @@ check_value "CONFIG_PREFIX_CONFIG_C" "value-c" "$CONFIG_PREFIX_CONFIG_C"
 # Test 2: Test with TYPE NAME format (kubectl standard format)
 echo ""
 echo "Test 2: Testing TYPE NAME format..."
-OUTPUT_TYPE_NAME=$(./kubectl-eex deployment test-app -n test-keex)
+OUTPUT_TYPE_NAME=$(./kubectl-eex deployment test-app -n test-keex -f shell)
 
 # Check if output is the same as TYPE/NAME format
 if [ "$OUTPUT" = "$OUTPUT_TYPE_NAME" ]; then
@@ -124,7 +124,7 @@ echo "Test 4: Testing different resource types with TYPE NAME format..."
 
 # Test statefulset with TYPE/NAME format
 echo "Testing statefulset with TYPE/NAME format:"
-OUTPUT_STS_SLASH=$(./kubectl-eex statefulset/test-statefulset -n test-keex)
+OUTPUT_STS_SLASH=$(./kubectl-eex statefulset/test-statefulset -n test-keex -f shell)
 echo "$OUTPUT_STS_SLASH" | grep -q "STATEFULSET_ENV=statefulset-value" || (echo "StatefulSet TYPE/NAME format failed" && exit 1)
 echo "$OUTPUT_STS_SLASH" | grep -q "DB_PASSWORD=secret123" || (echo "StatefulSet secret ref failed" && exit 1)
 echo "$OUTPUT_STS_SLASH" | grep -q "STS_APP_ENV=production" || (echo "StatefulSet envFrom prefix failed" && exit 1)
@@ -132,7 +132,7 @@ echo -e "${GREEN}✓ StatefulSet TYPE/NAME format test passed${NC}"
 
 # Test statefulset with TYPE NAME format
 echo "Testing statefulset with TYPE NAME format:"
-OUTPUT_STS_SPACE=$(./kubectl-eex statefulset test-statefulset -n test-keex)
+OUTPUT_STS_SPACE=$(./kubectl-eex statefulset test-statefulset -n test-keex -f shell)
 if [ "$OUTPUT_STS_SLASH" = "$OUTPUT_STS_SPACE" ]; then
     echo -e "${GREEN}✓ StatefulSet TYPE NAME format matches TYPE/NAME format${NC}"
 else
@@ -142,7 +142,7 @@ fi
 
 # Test short resource names (sts instead of statefulset)
 echo "Testing short resource name 'sts' with TYPE NAME format:"
-OUTPUT_STS_SHORT=$(./kubectl-eex sts test-statefulset -n test-keex)
+OUTPUT_STS_SHORT=$(./kubectl-eex sts test-statefulset -n test-keex -f shell)
 if [ "$OUTPUT_STS_SLASH" = "$OUTPUT_STS_SHORT" ]; then
     echo -e "${GREEN}✓ Short resource name 'sts' works correctly${NC}"
 else
@@ -152,7 +152,7 @@ fi
 
 # Test deployment short name
 echo "Testing short resource name 'deploy' with TYPE NAME format:"
-OUTPUT_DEPLOY_SHORT=$(./kubectl-eex deploy test-app -n test-keex)
+OUTPUT_DEPLOY_SHORT=$(./kubectl-eex deploy test-app -n test-keex -f shell)
 if [ "$OUTPUT" = "$OUTPUT_DEPLOY_SHORT" ]; then
     echo -e "${GREEN}✓ Short resource name 'deploy' works correctly${NC}"
 else
@@ -191,14 +191,14 @@ kubectl wait --for=condition=ready pod/test-pod-multi -n test-keex --timeout=60s
 
 # Test container selection with TYPE/NAME format
 echo "Testing container selection with TYPE/NAME format:"
-OUTPUT_POD_C1_SLASH=$(./kubectl-eex pod/test-pod-multi -n test-keex -c container1)
+OUTPUT_POD_C1_SLASH=$(./kubectl-eex pod/test-pod-multi -n test-keex -c container1 -f shell)
 echo "$OUTPUT_POD_C1_SLASH" | grep -q "CONTAINER1_ENV=container1-value" || (echo "Container1 selection failed" && exit 1)
 echo "$OUTPUT_POD_C1_SLASH" | grep -v -q "CONTAINER2_ENV" || (echo "Container1 selection included container2 env" && exit 1)
 echo -e "${GREEN}✓ Container selection with TYPE/NAME format works${NC}"
 
 # Test container selection with TYPE NAME format
 echo "Testing container selection with TYPE NAME format:"
-OUTPUT_POD_C1_SPACE=$(./kubectl-eex pod test-pod-multi -n test-keex -c container1)
+OUTPUT_POD_C1_SPACE=$(./kubectl-eex pod test-pod-multi -n test-keex -c container1 -f shell)
 if [ "$OUTPUT_POD_C1_SLASH" = "$OUTPUT_POD_C1_SPACE" ]; then
     echo -e "${GREEN}✓ Container selection with TYPE NAME format works${NC}"
 else
