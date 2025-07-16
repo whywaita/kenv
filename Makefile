@@ -1,16 +1,16 @@
 .PHONY: build build-plugin install-plugin test clean
 
 build:
-	go build -o kenv ./cmd/kenv
+	go build -o keex ./cmd/keex
 
 build-plugin:
-	go build -o kubectl-eextract ./cmd/kubectl-eextract
+	go build -o kubectl-eex ./cmd/kubectl-eex
 
 install-plugin: build-plugin
-	cp kubectl-eextract $(GOPATH)/bin/kubectl-eextract
+	cp kubectl-eex $(GOPATH)/bin/kubectl-eex
 
 test:
 	go test ./...
 
 clean:
-	rm -f kenv kubectl-eextract
+	rm -f keex kubectl-eex

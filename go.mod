@@ -1,4 +1,4 @@
-module github.com/whywaita/kenv
+module github.com/whywaita/keex
 
 go 1.24.4
 

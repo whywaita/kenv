@@ -3,7 +3,7 @@ package formatter
 import (
 	"testing"
 
-	"github.com/whywaita/kenv/pkg/extractor"
+	"github.com/whywaita/keex/pkg/extractor"
 )
 
 func TestFormatDocker(t *testing.T) {

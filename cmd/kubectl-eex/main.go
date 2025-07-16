@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/whywaita/kenv/pkg/extractor"
-	"github.com/whywaita/kenv/pkg/formatter"
-	"github.com/whywaita/kenv/pkg/resolver"
+	"github.com/whywaita/keex/pkg/extractor"
+	"github.com/whywaita/keex/pkg/formatter"
+	"github.com/whywaita/keex/pkg/resolver"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -39,25 +39,25 @@ func NewCmd(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "kubectl-eextract [TYPE/NAME]",
+		Use:   "kubectl-eex [TYPE/NAME]",
 		Short: "Extract environment variables from Kubernetes resources",
-		Long: `kubectl-eextract is a kubectl plugin that extracts environment variables from Kubernetes resources
+		Long: `kubectl-eex is a kubectl plugin that extracts environment variables from Kubernetes resources
 and formats them for use with docker run or shell commands.
 
 Supports Deployment, StatefulSet, DaemonSet, Job, CronJob, and Pod resources.
 
 Examples:
   # Extract env vars from a deployment
-  kubectl eextract deployment/my-app
+  kubectl eex deployment/my-app
 
   # Extract env vars from a specific container
-  kubectl eextract deployment/my-app -c my-container
+  kubectl eex deployment/my-app -c my-container
 
   # Output in docker run format
-  kubectl eextract deployment/my-app --format docker
+  kubectl eex deployment/my-app --format docker
 
   # Output in shell format with export
-  kubectl eextract pod/mypod --format shell --export`,
+  kubectl eex pod/mypod --format shell --export`,
 		Version: version,
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

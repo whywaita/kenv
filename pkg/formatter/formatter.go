@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/whywaita/kenv/pkg/extractor"
+	"github.com/whywaita/keex/pkg/extractor"
 )
 
 func FormatDocker(envVars []extractor.EnvVar, redact bool) string {
