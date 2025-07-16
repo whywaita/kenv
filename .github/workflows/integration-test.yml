@@ -1,0 +1,48 @@
+name: Integration Test
+
+on:
+  push:
+    branches: [ main, fix/recursive-secret ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
+    - name: Build kubectl-eex
+      run: make build-plugin
+
+    - name: Create kind cluster
+      uses: helm/kind-action@v1.9.0
+      with:
+        cluster_name: kind
+
+    - name: Create test namespace
+      run: kubectl create namespace test-keex
+
+    - name: Apply test resources
+      run: |
+        kubectl apply -f test/k8s/ -n test-keex
+
+    - name: Wait for resources to be ready
+      run: |
+        kubectl wait --for=condition=ready pod -l app=test-app -n test-keex --timeout=60s
+
+    - name: Run integration tests
+      run: |
+        chmod +x test/integration/test.sh
+        ./test/integration/test.sh
+
+    - name: Cleanup
+      if: always()
+      run: |
+        kubectl delete namespace test-keex --ignore-not-found=true
