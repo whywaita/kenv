@@ -1,8 +1,8 @@
-# Go CLI Tool: kenv – One-Line Environment Variable Extractor for Kubernetes Manifests
+# Go CLI Tool: keex – One-Line Environment Variable Extractor for Kubernetes Manifests
 
 ## 1. Purpose
 
-Build a standalone CLI (**kenv**) that quickly reproduces the exact set of environment variables and credentials used by an existing Kubernetes Deployment so developers can spin up identical containers locally with `docker run`, or export them directly into their shell.
+Build a standalone CLI (**keex**) that quickly reproduces the exact set of environment variables and credentials used by an existing Kubernetes Deployment so developers can spin up identical containers locally with `docker run`, or export them directly into their shell.
 
 ## 2. Background & Motivation
 
