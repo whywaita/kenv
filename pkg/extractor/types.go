@@ -7,6 +7,7 @@ type EnvVar struct {
 	IsSecret  bool
 	SecretRef *SecretKeyRef
 	ConfigRef *ConfigMapKeyRef
+	Prefix    string // Prefix for envFrom
 }
 
 type EnvVarSource int

@@ -218,23 +218,32 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 
 		// EnvFrom
 		for _, envFrom := range container.EnvFrom {
+			prefix := ""
+			if envFrom.Prefix != "" {
+				prefix = envFrom.Prefix
+			}
+
 			if envFrom.SecretRef != nil {
 				result = append(result, extractor.EnvVar{
-					Name:  fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
-					Value: "",
+					Name:   fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
+					Value:  "",
+					Source: extractor.SourceSecret,
 					SecretRef: &extractor.SecretKeyRef{
 						Name: envFrom.SecretRef.Name,
 						Key:  "*", // All keys
 					},
+					Prefix: prefix,
 				})
 			} else if envFrom.ConfigMapRef != nil {
 				result = append(result, extractor.EnvVar{
-					Name:  fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
-					Value: "",
+					Name:   fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
+					Value:  "",
+					Source: extractor.SourceConfigMap,
 					ConfigRef: &extractor.ConfigMapKeyRef{
 						Name: envFrom.ConfigMapRef.Name,
 						Key:  "*", // All keys
 					},
+					Prefix: prefix,
 				})
 			}
 		}
