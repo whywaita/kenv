@@ -1,5 +1,9 @@
 # keex - Kubernetes Environment Extractor
 
+[![Test](https://github.com/whywaita/keex/actions/workflows/test.yml/badge.svg)](https://github.com/whywaita/keex/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/whywaita/keex/branch/main/graph/badge.svg)](https://codecov.io/gh/whywaita/keex)
+[![Go Report Card](https://goreportcard.com/badge/github.com/whywaita/keex)](https://goreportcard.com/report/github.com/whywaita/keex)
+
 keex is a CLI tool that extracts environment variables from Kubernetes manifests and formats them for use with `docker run` or shell commands.
 
 ## Motivation

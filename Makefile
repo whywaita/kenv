@@ -1,4 +1,4 @@
-.PHONY: build build-plugin install-plugin test clean
+.PHONY: build build-plugin install-plugin test cover cover-html clean
 
 build:
 	go build -o keex ./cmd/keex
@@ -12,5 +12,13 @@ install-plugin: build-plugin
 test:
 	go test ./...
 
+cover:
+	go test -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -func=coverage.out
+
+cover-html: cover
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
 clean:
-	rm -f keex kubectl-eex
+	rm -f keex kubectl-eex coverage.out coverage.html
