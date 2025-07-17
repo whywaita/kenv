@@ -98,7 +98,7 @@ func runExtract(opts *extractOptions) error {
 	case "docker":
 		output = formatter.FormatDocker(envVars, opts.redact)
 	case "env":
-		output = formatter.FormatEnv(envVars, opts.redact)
+		output = formatter.FormatShell(envVars, false, opts.redact)
 	}
 
 	fmt.Println(output)
