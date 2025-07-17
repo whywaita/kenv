@@ -34,7 +34,7 @@ for use with docker run or shell commands.`,
 	}
 
 	cmd.Flags().StringVarP(&opts.file, "file", "f", "", "Manifest file path (\"-\" for stdin)")
-	cmd.Flags().StringVar(&opts.mode, "mode", "env", "Output mode: docker|env")
+	cmd.Flags().StringVar(&opts.mode, "mode", "env", "Output mode: docker|env|dotenv|compose")
 	cmd.Flags().StringVar(&opts.container, "container", "", "Target container name")
 	cmd.Flags().StringVar(&opts.context, "context", "", "kubeconfig context (default: current)")
 	cmd.Flags().StringVar(&opts.namespace, "namespace", "", "Kubernetes namespace (default: manifest/ns)")
@@ -45,8 +45,9 @@ for use with docker run or shell commands.`,
 
 func runExtract(opts *extractOptions) error {
 	// Validate mode
-	if opts.mode != "docker" && opts.mode != "env" {
-		return fmt.Errorf("invalid mode: %s (must be docker or env)", opts.mode)
+	validModes := map[string]bool{"docker": true, "env": true, "dotenv": true, "compose": true}
+	if !validModes[opts.mode] {
+		return fmt.Errorf("invalid mode: %s (must be docker, env, dotenv, or compose)", opts.mode)
 	}
 
 	// Read manifest
@@ -99,6 +100,10 @@ func runExtract(opts *extractOptions) error {
 		output = formatter.FormatDocker(envVars, opts.redact)
 	case "env":
 		output = formatter.FormatShell(envVars, false, opts.redact)
+	case "dotenv":
+		output = formatter.FormatDotenv(envVars)
+	case "compose":
+		output = formatter.FormatCompose(envVars)
 	}
 
 	fmt.Println(output)
