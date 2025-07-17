@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.4](https://github.com/whywaita/keex/compare/v0.1.3...v0.1.4) - 2025-07-17
+- Refactor: Extract common business logic between kubectl-eex and keex by @whywaita in https://github.com/whywaita/keex/pull/20
+
 ## [v0.1.3](https://github.com/whywaita/keex/compare/v0.1.2...v0.1.3) - 2025-07-17
 - Get recursive values from configmap/secret by @whywaita in https://github.com/whywaita/keex/pull/18
 
