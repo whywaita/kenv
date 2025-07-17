@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.3](https://github.com/whywaita/keex/compare/v0.1.2...v0.1.3) - 2025-07-17
+- Get recursive values from configmap/secret by @whywaita in https://github.com/whywaita/keex/pull/18
+
 ## [v0.1.2](https://github.com/whywaita/keex/compare/v0.1.1...v0.1.2) - 2025-07-16
 - Fix a version in goreleaser by @whywaita in https://github.com/whywaita/keex/pull/16
 
