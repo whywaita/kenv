@@ -110,7 +110,7 @@ echo ""
 echo "Test 3: Testing different output formats..."
 
 echo "Testing docker format:"
-./kubectl-eex deployment/test-app -n test-keex -f docker | grep -q "ENV DATABASE_HOST=\"localhost\"" || (echo "Docker format test failed" && exit 1)
+./kubectl-eex deployment/test-app -n test-keex -f docker | grep -q -- "-e DATABASE_HOST=\"localhost\"" || (echo "Docker format test failed" && exit 1)
 echo -e "${GREEN}✓ Docker format test passed${NC}"
 
 echo "Testing dotenv format:"
@@ -119,7 +119,7 @@ echo -e "${GREEN}✓ Dotenv format test passed${NC}"
 
 # Test TYPE NAME format with output format
 echo "Testing TYPE NAME format with docker output:"
-./kubectl-eex deployment test-app -n test-keex -f docker | grep -q "ENV DATABASE_HOST=\"localhost\"" || (echo "TYPE NAME docker format test failed" && exit 1)
+./kubectl-eex deployment test-app -n test-keex -f docker | grep -q -- "-e DATABASE_HOST=\"localhost\"" || (echo "TYPE NAME docker format test failed" && exit 1)
 echo -e "${GREEN}✓ TYPE NAME with docker format test passed${NC}"
 
 # Test 4: Test with different resource types (TYPE NAME format)
