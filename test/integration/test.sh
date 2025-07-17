@@ -129,9 +129,9 @@ echo "Test 4: Testing different resource types with TYPE NAME format..."
 # Test statefulset with TYPE/NAME format
 echo "Testing statefulset with TYPE/NAME format:"
 OUTPUT_STS_SLASH=$(./kubectl-eex statefulset/test-statefulset -n test-keex -f shell)
-echo "$OUTPUT_STS_SLASH" | grep -q "STATEFULSET_ENV=statefulset-value" || (echo "StatefulSet TYPE/NAME format failed" && exit 1)
-echo "$OUTPUT_STS_SLASH" | grep -q "DB_PASSWORD=secret123" || (echo "StatefulSet secret ref failed" && exit 1)
-echo "$OUTPUT_STS_SLASH" | grep -q "STS_APP_ENV=production" || (echo "StatefulSet envFrom prefix failed" && exit 1)
+echo "$OUTPUT_STS_SLASH" | grep -q "STATEFULSET_ENV='statefulset-value'" || (echo "StatefulSet TYPE/NAME format failed" && exit 1)
+echo "$OUTPUT_STS_SLASH" | grep -q "DB_PASSWORD='secret123'" || (echo "StatefulSet secret ref failed" && exit 1)
+echo "$OUTPUT_STS_SLASH" | grep -q "STS_APP_ENV='production'" || (echo "StatefulSet envFrom prefix failed" && exit 1)
 echo -e "${GREEN}✓ StatefulSet TYPE/NAME format test passed${NC}"
 
 # Test statefulset with TYPE NAME format
@@ -196,7 +196,7 @@ kubectl wait --for=condition=ready pod/test-pod-multi -n test-keex --timeout=60s
 # Test container selection with TYPE/NAME format
 echo "Testing container selection with TYPE/NAME format:"
 OUTPUT_POD_C1_SLASH=$(./kubectl-eex pod/test-pod-multi -n test-keex -c container1 -f shell)
-echo "$OUTPUT_POD_C1_SLASH" | grep -q "CONTAINER1_ENV=container1-value" || (echo "Container1 selection failed" && exit 1)
+echo "$OUTPUT_POD_C1_SLASH" | grep -q "CONTAINER1_ENV='container1-value'" || (echo "Container1 selection failed" && exit 1)
 echo "$OUTPUT_POD_C1_SLASH" | grep -v -q "CONTAINER2_ENV" || (echo "Container1 selection included container2 env" && exit 1)
 echo -e "${GREEN}✓ Container selection with TYPE/NAME format works${NC}"
 
