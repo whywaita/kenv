@@ -51,7 +51,7 @@ func TestFormatDocker(t *testing.T) {
 	}
 }
 
-func TestFormatEnv(t *testing.T) {
+func TestFormatShellOneLine(t *testing.T) {
 	tests := []struct {
 		name     string
 		envVars  []extractor.EnvVar
@@ -64,16 +64,17 @@ func TestFormatEnv(t *testing.T) {
 				{Name: "FOO", Value: "bar", Source: extractor.SourceDirect},
 				{Name: "BAZ", Value: "qux", Source: extractor.SourceDirect},
 			},
-			redact:   false,
-			expected: `FOO="bar" BAZ="qux"`,
+			redact: false,
+			expected: `FOO='bar'
+BAZ='qux'`,
 		},
 		{
-			name: "with quotes",
+			name: "with single quotes",
 			envVars: []extractor.EnvVar{
-				{Name: "MESSAGE", Value: `hello "world"`, Source: extractor.SourceDirect},
+				{Name: "MESSAGE", Value: `hello 'world'`, Source: extractor.SourceDirect},
 			},
 			redact:   false,
-			expected: `MESSAGE="hello \"world\""`,
+			expected: `MESSAGE='hello '\''world'\'''`,
 		},
 		{
 			name: "redacted secrets",
@@ -81,16 +82,17 @@ func TestFormatEnv(t *testing.T) {
 				{Name: "PASSWORD", Value: "secret123", Source: extractor.SourceSecret, IsSecret: true},
 				{Name: "USER", Value: "admin", Source: extractor.SourceDirect},
 			},
-			redact:   true,
-			expected: `PASSWORD="***REDACTED***" USER="admin"`,
+			redact: true,
+			expected: `PASSWORD='***REDACTED***'
+USER='admin'`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FormatEnv(tt.envVars, tt.redact)
+			result := FormatShell(tt.envVars, false, tt.redact)
 			if result != tt.expected {
-				t.Errorf("FormatEnv() = %q, want %q", result, tt.expected)
+				t.Errorf("FormatShell() = %q, want %q", result, tt.expected)
 			}
 		})
 	}

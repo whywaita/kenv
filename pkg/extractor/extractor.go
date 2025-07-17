@@ -50,94 +50,39 @@ func (e *Extractor) Extract(reader io.Reader, opts Options) ([]EnvVar, error) {
 			return nil, fmt.Errorf("failed to decode object: %w", err)
 		}
 
-		var containers []corev1.Container
+		var extractedVars []EnvVar
 
 		switch gvk.Kind {
 		case "Deployment":
 			deployment := obj.(*appsv1.Deployment)
-			containers = deployment.Spec.Template.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&deployment.Spec.Template.Spec, opts.Container)
 		case "StatefulSet":
 			statefulSet := obj.(*appsv1.StatefulSet)
-			containers = statefulSet.Spec.Template.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&statefulSet.Spec.Template.Spec, opts.Container)
 		case "DaemonSet":
 			daemonSet := obj.(*appsv1.DaemonSet)
-			containers = daemonSet.Spec.Template.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&daemonSet.Spec.Template.Spec, opts.Container)
 		case "Job":
 			job := obj.(*batchv1.Job)
-			containers = job.Spec.Template.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&job.Spec.Template.Spec, opts.Container)
 		case "CronJob":
 			cronJob := obj.(*batchv1.CronJob)
-			containers = cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&cronJob.Spec.JobTemplate.Spec.Template.Spec, opts.Container)
 		case "Pod":
 			pod := obj.(*corev1.Pod)
-			containers = pod.Spec.Containers
+			extractedVars = ExtractFromPodSpec(&pod.Spec, opts.Container)
 		default:
 			return nil, fmt.Errorf("unsupported resource type: %s", gvk.Kind)
 		}
 
-		for _, container := range containers {
-			if opts.Container != "" && container.Name != opts.Container {
-				continue
-			}
-
-			// Extract env vars
-			for _, env := range container.Env {
-				envVar := EnvVar{
-					Name: env.Name,
-				}
-
-				if env.Value != "" {
-					envVar.Value = env.Value
-					envVar.Source = SourceDirect
-				} else if env.ValueFrom != nil {
-					if env.ValueFrom.SecretKeyRef != nil {
-						envVar.Source = SourceSecret
-						envVar.IsSecret = true
-						envVar.SecretRef = &SecretKeyRef{
-							Name: env.ValueFrom.SecretKeyRef.Name,
-							Key:  env.ValueFrom.SecretKeyRef.Key,
-						}
-						envVar.Value = fmt.Sprintf("<%s:%s>", env.ValueFrom.SecretKeyRef.Name, env.ValueFrom.SecretKeyRef.Key)
-					} else if env.ValueFrom.ConfigMapKeyRef != nil {
-						envVar.Source = SourceConfigMap
-						envVar.ConfigRef = &ConfigMapKeyRef{
-							Name: env.ValueFrom.ConfigMapKeyRef.Name,
-							Key:  env.ValueFrom.ConfigMapKeyRef.Key,
-						}
-						envVar.Value = fmt.Sprintf("<%s:%s>", env.ValueFrom.ConfigMapKeyRef.Name, env.ValueFrom.ConfigMapKeyRef.Key)
-					}
-				}
-
-				envVars = append(envVars, envVar)
-			}
-
-			// Extract envFrom
-			for _, envFrom := range container.EnvFrom {
-				if envFrom.SecretRef != nil {
-					// For envFrom, we'll need to fetch all keys from the secret
-					// For now, we'll add a placeholder
-					envVar := EnvVar{
-						Name:     fmt.Sprintf("FROM_SECRET_%s", envFrom.SecretRef.Name),
-						Value:    fmt.Sprintf("<all-from-secret:%s>", envFrom.SecretRef.Name),
-						Source:   SourceSecret,
-						IsSecret: true,
-					}
-					envVars = append(envVars, envVar)
-				} else if envFrom.ConfigMapRef != nil {
-					envVar := EnvVar{
-						Name:   fmt.Sprintf("FROM_CONFIGMAP_%s", envFrom.ConfigMapRef.Name),
-						Value:  fmt.Sprintf("<all-from-configmap:%s>", envFrom.ConfigMapRef.Name),
-						Source: SourceConfigMap,
-					}
-					envVars = append(envVars, envVar)
-				}
-			}
-
-			// If container specified, break after first match
-			if opts.Container != "" {
-				break
+		// Mark secrets as IsSecret for redaction support in keex
+		for i := range extractedVars {
+			if extractedVars[i].Source == SourceSecret {
+				extractedVars[i].IsSecret = true
 			}
 		}
+
+		envVars = append(envVars, extractedVars...)
 	}
 
 	if len(envVars) == 0 {

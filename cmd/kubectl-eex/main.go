@@ -10,7 +10,6 @@ import (
 	"github.com/whywaita/keex/pkg/extractor"
 	"github.com/whywaita/keex/pkg/formatter"
 	"github.com/whywaita/keex/pkg/resolver"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
@@ -119,42 +118,42 @@ func runExtract(o *Options, cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to get deployment: %w", err)
 		}
-		envVars = extractFromPodSpec(&deploy.Spec.Template.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&deploy.Spec.Template.Spec, cmd.Flag("container").Value.String())
 
 	case "statefulset", "sts":
 		sts, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, resourceName, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to get statefulset: %w", err)
 		}
-		envVars = extractFromPodSpec(&sts.Spec.Template.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&sts.Spec.Template.Spec, cmd.Flag("container").Value.String())
 
 	case "daemonset", "ds":
 		ds, err := clientset.AppsV1().DaemonSets(namespace).Get(ctx, resourceName, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to get daemonset: %w", err)
 		}
-		envVars = extractFromPodSpec(&ds.Spec.Template.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&ds.Spec.Template.Spec, cmd.Flag("container").Value.String())
 
 	case "pod", "po":
 		pod, err := clientset.CoreV1().Pods(namespace).Get(ctx, resourceName, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to get pod: %w", err)
 		}
-		envVars = extractFromPodSpec(&pod.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&pod.Spec, cmd.Flag("container").Value.String())
 
 	case "job":
 		job, err := clientset.BatchV1().Jobs(namespace).Get(ctx, resourceName, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to get job: %w", err)
 		}
-		envVars = extractFromPodSpec(&job.Spec.Template.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&job.Spec.Template.Spec, cmd.Flag("container").Value.String())
 
 	case "cronjob", "cj":
 		cj, err := clientset.BatchV1().CronJobs(namespace).Get(ctx, resourceName, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("failed to get cronjob: %w", err)
 		}
-		envVars = extractFromPodSpec(&cj.Spec.JobTemplate.Spec.Template.Spec, cmd.Flag("container").Value.String())
+		envVars = extractor.ExtractFromPodSpec(&cj.Spec.JobTemplate.Spec.Template.Spec, cmd.Flag("container").Value.String())
 
 	default:
 		return fmt.Errorf("unsupported resource type: %s", resourceType)
@@ -191,82 +190,4 @@ func runExtract(o *Options, cmd *cobra.Command, args []string) error {
 		return err
 	}
 	return nil
-}
-
-func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.EnvVar {
-	var result []extractor.EnvVar
-
-	containers := append(spec.InitContainers, spec.Containers...)
-	for _, container := range containers {
-		// Skip if container name is specified and doesn't match
-		if containerName != "" && container.Name != containerName {
-			continue
-		}
-
-		// Direct env vars
-		for _, env := range container.Env {
-			ev := extractor.EnvVar{
-				Name:  env.Name,
-				Value: env.Value,
-			}
-
-			// Handle valueFrom
-			if env.ValueFrom != nil {
-				if env.ValueFrom.SecretKeyRef != nil {
-					ev.Source = extractor.SourceSecret
-					ev.SecretRef = &extractor.SecretKeyRef{
-						Name: env.ValueFrom.SecretKeyRef.Name,
-						Key:  env.ValueFrom.SecretKeyRef.Key,
-					}
-				} else if env.ValueFrom.ConfigMapKeyRef != nil {
-					ev.Source = extractor.SourceConfigMap
-					ev.ConfigRef = &extractor.ConfigMapKeyRef{
-						Name: env.ValueFrom.ConfigMapKeyRef.Name,
-						Key:  env.ValueFrom.ConfigMapKeyRef.Key,
-					}
-				}
-			}
-
-			result = append(result, ev)
-		}
-
-		// EnvFrom
-		for _, envFrom := range container.EnvFrom {
-			prefix := ""
-			if envFrom.Prefix != "" {
-				prefix = envFrom.Prefix
-			}
-
-			if envFrom.SecretRef != nil {
-				result = append(result, extractor.EnvVar{
-					Name:   fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
-					Value:  "",
-					Source: extractor.SourceSecret,
-					SecretRef: &extractor.SecretKeyRef{
-						Name: envFrom.SecretRef.Name,
-						Key:  "*", // All keys
-					},
-					Prefix: prefix,
-				})
-			} else if envFrom.ConfigMapRef != nil {
-				result = append(result, extractor.EnvVar{
-					Name:   fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
-					Value:  "",
-					Source: extractor.SourceConfigMap,
-					ConfigRef: &extractor.ConfigMapKeyRef{
-						Name: envFrom.ConfigMapRef.Name,
-						Key:  "*", // All keys
-					},
-					Prefix: prefix,
-				})
-			}
-		}
-
-		// Only process first matching container if name was specified
-		if containerName != "" {
-			break
-		}
-	}
-
-	return result
 }
