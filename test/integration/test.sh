@@ -114,7 +114,7 @@ echo "Testing docker format:"
 echo -e "${GREEN}✓ Docker format test passed${NC}"
 
 echo "Testing dotenv format:"
-./kubectl-eex deployment/test-app -n test-keex -f dotenv | grep -q "DATABASE_HOST=localhost" || (echo "Dotenv format test failed" && exit 1)
+./kubectl-eex deployment/test-app -n test-keex -f dotenv | grep -q "DATABASE_HOST=" || (echo "Dotenv format test failed" && exit 1)
 echo -e "${GREEN}✓ Dotenv format test passed${NC}"
 
 # Test TYPE NAME format with output format

@@ -28,7 +28,9 @@
       "Bash(git checkout:*)",
       "Bash(go fmt:*)",
       "Bash(gh workflow view:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)",
+      "Bash(true)"
     ],
     "deny": []
   }
