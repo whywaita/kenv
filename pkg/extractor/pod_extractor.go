@@ -92,4 +92,3 @@ func ExtractFromPodSpec(spec *corev1.PodSpec, containerName string) []EnvVar {
 
 	return result
 }
-
