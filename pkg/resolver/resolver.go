@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/whywaita/keex/pkg/extractor"
 	corev1 "k8s.io/api/core/v1"
@@ -100,13 +101,45 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 					secretCache[envVar.SecretRef.Name] = secret
 				}
 
-				if value, ok := secret.Data[envVar.SecretRef.Key]; ok {
-					envVar.Value = string(value)
+				// Handle envFrom (when Key is "*")
+				if envVar.SecretRef.Key == "*" {
+					// Extract all key-value pairs from the secret
+					// Sort keys for consistent output
+					keys := make([]string, 0, len(secret.Data))
+					for key := range secret.Data {
+						keys = append(keys, key)
+					}
+					sort.Strings(keys)
+
+					for _, key := range keys {
+						value := secret.Data[key]
+						envName := key
+						if envVar.Prefix != "" {
+							envName = envVar.Prefix + key
+						}
+						newEnvVar := extractor.EnvVar{
+							Name:   envName,
+							Value:  string(value),
+							Source: extractor.SourceSecret,
+							SecretRef: &extractor.SecretKeyRef{
+								Name: envVar.SecretRef.Name,
+								Key:  key,
+							},
+						}
+						resolved = append(resolved, newEnvVar)
+					}
 				} else {
-					fmt.Fprintf(os.Stderr, "Warning: key %s not found in secret %s\n", envVar.SecretRef.Key, envVar.SecretRef.Name)
+					// Handle specific key reference
+					if value, ok := secret.Data[envVar.SecretRef.Key]; ok {
+						envVar.Value = string(value)
+					} else {
+						fmt.Fprintf(os.Stderr, "Warning: key %s not found in secret %s\n", envVar.SecretRef.Key, envVar.SecretRef.Name)
+					}
+					resolved = append(resolved, envVar)
 				}
+			} else {
+				resolved = append(resolved, envVar)
 			}
-			resolved = append(resolved, envVar)
 
 		case extractor.SourceConfigMap:
 			if envVar.ConfigRef != nil {
@@ -122,13 +155,45 @@ func (r *Resolver) ResolveAll(envVars []extractor.EnvVar) ([]extractor.EnvVar, e
 					configMapCache[envVar.ConfigRef.Name] = configMap
 				}
 
-				if value, ok := configMap.Data[envVar.ConfigRef.Key]; ok {
-					envVar.Value = value
+				// Handle envFrom (when Key is "*")
+				if envVar.ConfigRef.Key == "*" {
+					// Extract all key-value pairs from the configmap
+					// Sort keys for consistent output
+					keys := make([]string, 0, len(configMap.Data))
+					for key := range configMap.Data {
+						keys = append(keys, key)
+					}
+					sort.Strings(keys)
+
+					for _, key := range keys {
+						value := configMap.Data[key]
+						envName := key
+						if envVar.Prefix != "" {
+							envName = envVar.Prefix + key
+						}
+						newEnvVar := extractor.EnvVar{
+							Name:   envName,
+							Value:  value,
+							Source: extractor.SourceConfigMap,
+							ConfigRef: &extractor.ConfigMapKeyRef{
+								Name: envVar.ConfigRef.Name,
+								Key:  key,
+							},
+						}
+						resolved = append(resolved, newEnvVar)
+					}
 				} else {
-					fmt.Fprintf(os.Stderr, "Warning: key %s not found in configmap %s\n", envVar.ConfigRef.Key, envVar.ConfigRef.Name)
+					// Handle specific key reference
+					if value, ok := configMap.Data[envVar.ConfigRef.Key]; ok {
+						envVar.Value = value
+					} else {
+						fmt.Fprintf(os.Stderr, "Warning: key %s not found in configmap %s\n", envVar.ConfigRef.Key, envVar.ConfigRef.Name)
+					}
+					resolved = append(resolved, envVar)
 				}
+			} else {
+				resolved = append(resolved, envVar)
 			}
-			resolved = append(resolved, envVar)
 
 		default:
 			resolved = append(resolved, envVar)

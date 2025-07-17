@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: test-container
+        image: busybox:latest
+        command: ["sleep", "3600"]
+        env:
+        # Direct environment variables
+        - name: DIRECT_ENV
+          value: "direct-value"
+        # Individual secret references
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: test-secret
+              key: DATABASE_HOST
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: test-secret
+              key: DATABASE_PORT
+        # Individual configmap references
+        - name: APPLICATION_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: test-configmap
+              key: APP_ENV
+        - name: APPLICATION_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: test-configmap
+              key: APP_PORT
+        # envFrom for entire secret (testing recursive functionality)
+        envFrom:
+        - secretRef:
+            name: test-secret
+        - configMapRef:
+            name: test-configmap
+        - secretRef:
+            name: test-secret-partial
+          prefix: PARTIAL_
+        - configMapRef:
+            name: test-configmap-partial
+          prefix: CONFIG_PREFIX_

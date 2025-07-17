@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap
+data:
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_LOG_LEVEL: info
+  APP_PORT: "8080"
+  APP_NAME: test-application
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-configmap-partial
+data:
+  CONFIG_A: value-a
+  CONFIG_B: value-b
+  CONFIG_C: value-c

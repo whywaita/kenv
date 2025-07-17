@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-statefulset
+spec:
+  serviceName: "test-statefulset"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-statefulset
+  template:
+    metadata:
+      labels:
+        app: test-statefulset
+    spec:
+      containers:
+      - name: test-container
+        image: busybox:latest
+        command: ["sleep", "3600"]
+        env:
+        - name: STATEFULSET_ENV
+          value: "statefulset-value"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: test-secret
+              key: DATABASE_PASS
+        envFrom:
+        - configMapRef:
+            name: test-configmap
+          prefix: STS_

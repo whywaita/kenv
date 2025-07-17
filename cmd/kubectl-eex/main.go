@@ -39,7 +39,7 @@ func NewCmd(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "kubectl-eex [TYPE/NAME]",
+		Use:   "kubectl-eex TYPE NAME or kubectl-eex TYPE/NAME",
 		Short: "Extract environment variables from Kubernetes resources",
 		Long: `kubectl-eex is a kubectl plugin that extracts environment variables from Kubernetes resources
 and formats them for use with docker run or shell commands.
@@ -47,11 +47,13 @@ and formats them for use with docker run or shell commands.
 Supports Deployment, StatefulSet, DaemonSet, Job, CronJob, and Pod resources.
 
 Examples:
-  # Extract env vars from a deployment
+  # Extract env vars from a deployment (both formats supported)
   kubectl eex deployment/my-app
+  kubectl eex deployment my-app
 
   # Extract env vars from a specific container
   kubectl eex deployment/my-app -c my-container
+  kubectl eex deployment my-app -c my-container
 
   # Output in docker run format
   kubectl eex deployment/my-app --format docker
@@ -59,9 +61,9 @@ Examples:
   # Output in shell format with export
   kubectl eex pod/mypod --format shell --export`,
 		Version: version,
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runExtract(o, cmd, args[0])
+			return runExtract(o, cmd, args)
 		},
 	}
 
@@ -74,7 +76,7 @@ Examples:
 	return cmd
 }
 
-func runExtract(o *Options, cmd *cobra.Command, resource string) error {
+func runExtract(o *Options, cmd *cobra.Command, args []string) error {
 	restConfig, err := o.configFlags.ToRESTConfig()
 	if err != nil {
 		return fmt.Errorf("failed to get REST config: %w", err)
@@ -91,11 +93,21 @@ func runExtract(o *Options, cmd *cobra.Command, resource string) error {
 	}
 
 	// Parse resource type and name
-	parts := strings.SplitN(resource, "/", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid resource format, expected TYPE/NAME")
+	var resourceType, resourceName string
+
+	if len(args) == 1 {
+		// Handle TYPE/NAME format
+		parts := strings.SplitN(args[0], "/", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid resource format, expected TYPE/NAME or TYPE NAME")
+		}
+		resourceType, resourceName = parts[0], parts[1]
+	} else if len(args) == 2 {
+		// Handle TYPE NAME format
+		resourceType, resourceName = args[0], args[1]
+	} else {
+		return fmt.Errorf("invalid arguments, expected TYPE/NAME or TYPE NAME")
 	}
-	resourceType, resourceName := parts[0], parts[1]
 
 	// Extract based on resource type
 	var envVars []extractor.EnvVar
@@ -201,11 +213,13 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 			// Handle valueFrom
 			if env.ValueFrom != nil {
 				if env.ValueFrom.SecretKeyRef != nil {
+					ev.Source = extractor.SourceSecret
 					ev.SecretRef = &extractor.SecretKeyRef{
 						Name: env.ValueFrom.SecretKeyRef.Name,
 						Key:  env.ValueFrom.SecretKeyRef.Key,
 					}
 				} else if env.ValueFrom.ConfigMapKeyRef != nil {
+					ev.Source = extractor.SourceConfigMap
 					ev.ConfigRef = &extractor.ConfigMapKeyRef{
 						Name: env.ValueFrom.ConfigMapKeyRef.Name,
 						Key:  env.ValueFrom.ConfigMapKeyRef.Key,
@@ -218,23 +232,32 @@ func extractFromPodSpec(spec *corev1.PodSpec, containerName string) []extractor.
 
 		// EnvFrom
 		for _, envFrom := range container.EnvFrom {
+			prefix := ""
+			if envFrom.Prefix != "" {
+				prefix = envFrom.Prefix
+			}
+
 			if envFrom.SecretRef != nil {
 				result = append(result, extractor.EnvVar{
-					Name:  fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
-					Value: "",
+					Name:   fmt.Sprintf("# from secret: %s", envFrom.SecretRef.Name),
+					Value:  "",
+					Source: extractor.SourceSecret,
 					SecretRef: &extractor.SecretKeyRef{
 						Name: envFrom.SecretRef.Name,
 						Key:  "*", // All keys
 					},
+					Prefix: prefix,
 				})
 			} else if envFrom.ConfigMapRef != nil {
 				result = append(result, extractor.EnvVar{
-					Name:  fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
-					Value: "",
+					Name:   fmt.Sprintf("# from configmap: %s", envFrom.ConfigMapRef.Name),
+					Value:  "",
+					Source: extractor.SourceConfigMap,
 					ConfigRef: &extractor.ConfigMapKeyRef{
 						Name: envFrom.ConfigMapRef.Name,
 						Key:  "*", // All keys
 					},
+					Prefix: prefix,
 				})
 			}
 		}
