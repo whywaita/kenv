@@ -1,5 +1,7 @@
 /dist
 /coverage.txt
+/coverage.out
+/coverage.html
 /keex
 /kubectl-extract
 /kubectl-eex
